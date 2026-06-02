@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Gallery</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#000;
+    overflow-y:scroll;
+    scroll-snap-type:y mandatory;
+}
+
+.item{
+    width:100vw;
+    height:100vh;
+    scroll-snap-align:start;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#000;
+}
+
+img,video{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+</style>
+</head>
+<body>
+
+<div class="item">
+    <img src="media/1.jpg">
+</div>
+
+<div class="item">
+    <video src="media/2.mp4" controls></video>
+</div>
+
+<div class="item">
+    <img src="media/3.jpg">
+</div>
+
+<div class="item">
+    <video src="media/4.mp4" controls></video>
+</div>
+
+</body>
+</html>
