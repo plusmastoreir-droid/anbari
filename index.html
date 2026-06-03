@@ -68,7 +68,15 @@ img,video{
     <video src="media/4.mp4" controls></video>
 </div>
 <script>
-const observer = new IntersectionObserver((entries) => {
+const container = document.body;
+
+const items = [...document.querySelectorAll('.item')];
+
+items.sort(() => Math.random() - 0.5);
+
+items.forEach(item => container.appendChild(item));
+    
+    const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     const video = entry.target.querySelector("video");
 
