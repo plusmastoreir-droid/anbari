@@ -37,7 +37,18 @@ img,video{
     height:100%;
     object-fit:contain;
 }
+    <style>
+
+.logo{
+    position:fixed;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    width:120px;
+    z-index:9999;
+}
 </style>
+
 </head>
 <body>
 
@@ -56,6 +67,27 @@ img,video{
 <div class="item">
     <video src="media/4.mp4" controls></video>
 </div>
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    const video = entry.target.querySelector("video");
 
+    if (!video) return;
+
+    if (entry.isIntersecting) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  });
+}, {
+  threshold: 0.7
+});
+
+document.querySelectorAll(".item").forEach(item => {
+  observer.observe(item);
+});
+</script>
 </body>
+    <img src="logo.png" class="logo">
 </html>
