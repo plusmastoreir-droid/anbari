@@ -86,6 +86,25 @@ img,video{
 </style>
 </head>
 <script>
+async function uploadImage() {
+  const file = document.getElementById("fileInput").files[0];
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "anbari");
+
+  const res = await fetch("https://api.cloudinary.com/v1_1/deyzaowih/image/upload", {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await res.json();
+
+  console.log(data);
+
+  
+  document.getElementById("preview").src = data.secure_url;
+}
 window.addEventListener("load", () => {
     setTimeout(() => {
         const splash = document.getElementById("splash");
@@ -99,6 +118,10 @@ window.addEventListener("load", () => {
 });
 </script>
     <body>
+        <input type="file" id="fileInput">
+<button onclick="uploadImage()">Upload</button>
+
+<img id="preview" style="max-width:200px; display:block; margin-top:10px;">
   <div id="popup">
     <div id="popup-box">
         آیدی تلگرام:<br>
