@@ -37,7 +37,6 @@ img,video{
     height:100%;
     object-fit:contain;
 }
-    <style>
 
 .logo{
     position:fixed;
@@ -66,7 +65,7 @@ img,video{
     opacity:0;
     pointer-events:none;
 }
-
+</style>
 </head>
 <script>
 window.addEventListener("load", () => {
@@ -133,5 +132,7 @@ document.querySelectorAll(".item").forEach(item => {
 });
 </script>
 </body>
-    <img src="logo.png" class="logo">
+    <div class="logo">
+    <img src="logo.png">
+    </div>
 </html>
