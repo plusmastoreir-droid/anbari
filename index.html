@@ -216,12 +216,7 @@ window.addEventListener("load", () => {
 
 <script>
 const container = document.body;
-const items = [...document.querySelectorAll(".item")];
-
-// shuffle
-items.sort(() => Math.random() - 0.5);
-items.forEach(i => container.appendChild(i));
-    if ('scrollRestoration' in history) {
+if ('scrollRestoration' in history) {
   history.scrollRestoration = "manual";
 }
 
@@ -229,10 +224,21 @@ window.addEventListener("load", () => {
   window.scrollTo(0, 0);
 });
 
-// آیتم‌ها
-const items = document.querySelectorAll(".item");
+// ===============================
+// 1. COLLECT ITEMS
+// ===============================
+let items = Array.from(document.querySelectorAll(".item"));
+const container = document.body;
 
-// ===== 1. VIDEO AUTOPLAY MANAGER =====
+// ===============================
+// 2. SHUFFLE ONCE
+// ===============================
+items.sort(() => Math.random() - 0.5);
+items.forEach(i => container.appendChild(i));
+
+// ===============================
+// 3. VIDEO OPTIMIZED AUTOPLAY
+// ===============================
 const videoObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     const video = entry.target.querySelector("video");
@@ -248,9 +254,9 @@ const videoObserver = new IntersectionObserver((entries) => {
   threshold: 0.75
 });
 
-items.forEach(item => videoObserver.observe(item));
-
-// ===== 2. PRELOAD 1 NEXT ITEM =====
+// ===============================
+// 4. PRELOAD ONLY +1 ITEM
+// ===============================
 const preloadObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (!entry.isIntersecting) return;
@@ -260,22 +266,20 @@ const preloadObserver = new IntersectionObserver((entries) => {
 
     if (!next || !next.classList.contains("item")) return;
 
-    // preload images
     const img = next.querySelector("img");
-    if (img && !img.src) {
-      img.src = img.dataset.src || img.getAttribute("src");
+    if (img && !img.src && img.dataset.src) {
+      img.src = img.dataset.src;
     }
 
-    // preload video
     const video = next.querySelector("video");
     if (video && !video.src) {
       const src = video.getAttribute("src");
       if (src) {
-        const preload = document.createElement("link");
-        preload.rel = "preload";
-        preload.as = "video";
-        preload.href = src;
-        document.head.appendChild(preload);
+        const link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "video";
+        link.href = src;
+        document.head.appendChild(link);
       }
     }
   });
@@ -283,46 +287,77 @@ const preloadObserver = new IntersectionObserver((entries) => {
   threshold: 0.6
 });
 
-items.forEach(item => preloadObserver.observe(item));
+// ===============================
+// 5. SIMPLE INFINITE (SMART REUSE)
+// ===============================
+const recycleBuffer = [];
 
-// ===== 3. INFINITE LOOP FEED =====
-const container = document.body;
-
-const loopObserver = new IntersectionObserver((entries) => {
+const recycleObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (!entry.isIntersecting) return;
 
     const item = entry.target;
 
-    // وقتی رسید به آخرین 3 آیتم → clone کن
-    const index = [...items].indexOf(item);
+    const index = items.indexOf(item);
 
+    // وقتی به آخر نزدیک شدی → آیتم‌های قدیمی رو recycle کن
     if (index >= items.length - 3) {
-      items.forEach(i => {
-        const clone = i.cloneNode(true);
+      items.slice(0, 5).forEach(oldItem => {
+        const clone = oldItem.cloneNode(true);
+
         container.appendChild(clone);
 
         videoObserver.observe(clone);
         preloadObserver.observe(clone);
-        loopObserver.observe(clone);
+        recycleObserver.observe(clone);
+
+        recycleBuffer.push(clone);
       });
+
+      // cleanup memory (خیلی مهم)
+      if (recycleBuffer.length > 30) {
+        const removed = recycleBuffer.splice(0, 10);
+        removed.forEach(el => el.remove());
+      }
     }
   });
 }, {
   threshold: 1.0
 });
 
-items.forEach(item => loopObserver.observe(item));
+// ===============================
+// 6. INIT OBSERVERS
+// ===============================
+items.forEach(item => {
+  videoObserver.observe(item);
+  preloadObserver.observe(item);
+  recycleObserver.observe(item);
+});
 
-// ===== 4. POPUP =====
+// ===============================
+// 7. SPLASH SAFE FIX
+// ===============================
+setTimeout(() => {
+  const splash = document.getElementById("splash");
+  if (splash) {
+    splash.style.transition = "opacity 0.8s ease";
+    splash.style.opacity = "0";
+
+    setTimeout(() => splash.remove(), 800);
+  }
+}, 2000);
+
+// ===============================
+// 8. POPUP
+// ===============================
 const logo = document.querySelector(".logo");
 const popup = document.getElementById("popup");
 
-logo.addEventListener("click", () => {
+logo?.addEventListener("click", () => {
   popup.style.display = "flex";
 });
 
-popup.addEventListener("click", () => {
+popup?.addEventListener("click", () => {
   popup.style.display = "none";
 });
 </script>
