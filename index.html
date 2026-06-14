@@ -216,17 +216,26 @@ window.addEventListener("load", () => {
 
 <script>
 const container = document.body;
+const items = [...document.querySelectorAll(".item")];
 
-const items = [...document.querySelectorAll('.item')];
-
+// shuffle
 items.sort(() => Math.random() - 0.5);
+items.forEach(i => container.appendChild(i));
+    if ('scrollRestoration' in history) {
+  history.scrollRestoration = "manual";
+}
 
-items.forEach(item => container.appendChild(item));
-    
-    const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
+window.addEventListener("load", () => {
+  window.scrollTo(0, 0);
+});
+
+// آیتم‌ها
+const items = document.querySelectorAll(".item");
+
+// ===== 1. VIDEO AUTOPLAY MANAGER =====
+const videoObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
     const video = entry.target.querySelector("video");
-
     if (!video) return;
 
     if (entry.isIntersecting) {
@@ -236,21 +245,85 @@ items.forEach(item => container.appendChild(item));
     }
   });
 }, {
-  threshold: 0.7
+  threshold: 0.75
 });
 
-document.querySelectorAll(".item").forEach(item => {
-  observer.observe(item);
+items.forEach(item => videoObserver.observe(item));
+
+// ===== 2. PRELOAD 1 NEXT ITEM =====
+const preloadObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+
+    const current = entry.target;
+    const next = current.nextElementSibling;
+
+    if (!next || !next.classList.contains("item")) return;
+
+    // preload images
+    const img = next.querySelector("img");
+    if (img && !img.src) {
+      img.src = img.dataset.src || img.getAttribute("src");
+    }
+
+    // preload video
+    const video = next.querySelector("video");
+    if (video && !video.src) {
+      const src = video.getAttribute("src");
+      if (src) {
+        const preload = document.createElement("link");
+        preload.rel = "preload";
+        preload.as = "video";
+        preload.href = src;
+        document.head.appendChild(preload);
+      }
+    }
+  });
+}, {
+  threshold: 0.6
 });
+
+items.forEach(item => preloadObserver.observe(item));
+
+// ===== 3. INFINITE LOOP FEED =====
+const container = document.body;
+
+const loopObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+
+    const item = entry.target;
+
+    // وقتی رسید به آخرین 3 آیتم → clone کن
+    const index = [...items].indexOf(item);
+
+    if (index >= items.length - 3) {
+      items.forEach(i => {
+        const clone = i.cloneNode(true);
+        container.appendChild(clone);
+
+        videoObserver.observe(clone);
+        preloadObserver.observe(clone);
+        loopObserver.observe(clone);
+      });
+    }
+  });
+}, {
+  threshold: 1.0
+});
+
+items.forEach(item => loopObserver.observe(item));
+
+// ===== 4. POPUP =====
 const logo = document.querySelector(".logo");
 const popup = document.getElementById("popup");
 
 logo.addEventListener("click", () => {
-    popup.style.display = "flex";
+  popup.style.display = "flex";
 });
 
 popup.addEventListener("click", () => {
-    popup.style.display = "none";
+  popup.style.display = "none";
 });
 </script>
 </body>
